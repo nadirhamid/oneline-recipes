@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<!-- 
+  Bandwidth Catapult demo.
+
+  What this does:
+  Here we will use the last.fm dataset in finding tracks
+  and artist matching those listed one this page. Page is
+  configurable -- tags can be changed at any time we will find the best matches
+  
+-->
+<!-- -->
+<html class="no-js" lang="en-US"> <!--<![endif]-->
+    <head>
+        <title>Bandwidth Catapult -- Web based calls using websockets</title>
+    </head>
+    <body>
+      <h2>Hello, this is an example using Catapult's open python SDK with Oneline.  <br/> We will make calls and perform your requests using websockets 
+      </h2>
+
+      <div id="catapult_root">
+      </div>
+      <button id="catapult_add">Make Call</button>
+
+
+      <h5>On Going Calls</h5>
+      <hr/>
+
+      <ul class="results" id="catapult_results">
+      </ul>
+
+
+      <style>
+        .results {
+          list-style: none;
+        }
+        .results li {
+          border: 1px solid #E3E3E3;
+          float: left;
+          margin: 7px;
+          padding: 15px;
+          border-radius: 7px;
+        }
+        .results li img {
+          width: inherit;
+          height: inherit;
+    
+        }
+        .results li .artist {
+          width: inherit;
+          font-size: 14px;
+          font-weight: 700;
+        }
+        .results li .track {
+          width: inherit;
+          font-size: 12px;
+        }
+        .results li .desc {
+          width: inherit;
+          color: darkGray;
+        }
+        .clear {
+          clear: both;
+        }
+      
+      </style>
+
+      <script type='application/javascript' src='./bson.js'></script>
+      <script type='application/javascript' src='./oneline.js'></script>
+      <script type='application/javascript' src='https://code.jquery.com/jquery-2.1.3.js'></script>
+      <script type='application/javascript'>
+
+
+      $(document).ready(function(e) {
+         
+
+        // main application configuration
+        // we will use some jQuery here
+        // the application struture needs to define
+        //
+        // getCallNumber/0
+        // propagate/1  
+        // makeCall/1
+        // makeCallInternal/1
+        
+        // additionaly should
+        CatapultApp = window.CatapultApp || {}; 
+        CatapultApp.fromNumber = '';
+        CatapultApp.callWaiting = false;// whether we need to handle an outgoing call 
+        CatapultApp.cont = $("#catapult_root").get()[0];
+        CatapultApp.results = $("#catapult_results").get()[0];
+        CatapultApp.add = $("#catapult_add").get()[0];
+        
+
+        
+        // internal make call function
+        // upstream with oneline to catapult
+        // api. 
+        //
+        // @param to_number a valid phonenumber
+        CatapultApp.makeCallInternal = function(to_number) {
+             CatapultApp.callWaiting = true; 
+
+             alert("You have set up a call. It will be added to your queue.");
+        };
+
+        // get the current call number
+        // since the element in DOM is undeterministic -- as it
+        // only appears once the "Make Call" button is clicked 
+        // we should return "" when not found
+        CatapultApp.getCallNumber = function() {
+          if ($("#catapult_call_number").get().length===0) {
+            return "";
+          }
+
+          return $("#catapult_call_number").val();
+        };
+
+        // ensure the call was made
+        // we do this
+        // by checking if bandwidth_sdk provided
+        // an error or not
+        //
+        // @param data: output data from module
+        CatapultApp.ensureCall = function(res) {
+
+
+          console.log("has a call been made");
+          console.log(res);
+          CatapultApp.callWaiting = false;
+        };
+
+        // make calls. this should spawn
+        // new DOM elements for the following
+        // 
+        // check if makeCallContainer is already present
+        //
+        // to_number
+        CatapultApp.makeCall = function(e) {
+          e.preventDefault();
+
+          var mcc = document.getElementById("makeCallContainer");
+
+          if (mcc === null) {
+            var div = document.createElement("div");
+            var input = document.createElement("input");
+            var label = document.createElement("label");
+            var start = document.createElement("button");
+        
+
+            input.setAttribute("placeholder", "To Number (i.e: +32323223)");
+            input.setAttribute("id", "catapult_call_number");
+            start.onclick = function() { CatapultApp.makeCallInternal(); }
+
+            div.setAttribute("id", "makeCallContainer");
+            start.innerHTML = "Start Call";
+            div.appendChild(label);
+            div.appendChild(input);
+            div.appendChild(start);
+            CatapultApp.cont.appendChild(div);
+          }
+
+
+        };
+        // get the call history
+        // for your account
+        // this will enumerate all the
+        // calls and be used in propagateCalls/1
+        //
+        // @returns  all calls
+        CatapultApp.getCalls = function() {
+          /*
+          return {
+            "type": "OR",
+            "from": CatapultApp.fromNumber
+          }
+        */
+        };
+
+        // shows all the calls
+        // we have made so far
+        // additionally show on DOM
+        //
+        // @param data: JSON structure of data
+        CatapultApp.propagateCalls = function(data) {
+           var elements = [];
+            for (var i in data) {
+              var li = document.createElement("li"); 
+              var img = document.createElement("img");
+              var clr1 = document.createElement("div");
+              var fromdiv = document.createElement("small");
+              var clr2 = document.createElement("div");
+              var todiv = document.createElement("small");
+              var clr3 = document.createElement("div");
+              var otherdiv = document.createElement("small");
+              clr1.setAttribute("class", "clear");
+              clr2.setAttribute("class", "clear");
+              clr3.setAttribute("class", "clear");
+              // what was the title
+              fromdiv.innerHTML = "Call From: " + data[i].from;
+              todiv.innerHTML = "Call To: " + data[i].to;
+              otherdiv.innerHTML = "State: " + data[i].state;
+
+              li.setAttribute("class", "catapult-result");
+              li.appendChild(img);
+              li.appendChild(otherdiv);
+              li.appendChild(clr1);
+              li.appendChild(fromdiv);
+              li.appendChild(clr2);
+              li.appendChild(todiv);
+              li.appendChild(clr3);
+
+              elements.push(
+                li
+              );
+
+            } 
+            var c = $(".catapult-result").get();
+
+            for (var i = 0; i != c.length; i ++) {
+              if (typeof elements[i] !== 'undefined')
+                c[i].innerHTML = elements[i].innerHTML;
+            }
+            for (var i = c.length; i <= elements.length; i ++) {
+              if (typeof elements[i] !== 'undefined')
+                CatapultApp.results.appendChild(elements[i]);
+            }
+        };
+
+
+
+        CatapultApp.add.onclick = function(e) {
+          return CatapultApp.makeCall(e); 
+        };
+        // sets up the catapult caller
+        // demo. We need to make sure
+        // the frequency is a reasonable
+        // size for this example we've used
+        // 1000 (1 second).
+        //
+        // NOTE: if you deployed Last.fm's recipe
+        // you will notice this one is event based and not
+        // automatic. So we need an input element to bind too
+        Oneline.setup({
+          module: 'catapult_caller',
+          host: document.location.host,
+          freq: 1000
+        });
+
+
+
+        // this is our initial
+        // setup. it will
+        // call the listing function
+        Oneline.generic({
+          "type": "list"
+        });
+
+        // initiate the pipeline
+        // this will start the oneline event
+        // using the catapult caller module
+        // on_success provide the calls and their
+        // states
+        Oneline.pipeline(function(res) {
+          
+          if (res.status === 'error') {
+
+            CatapultApp.warn("Something went wrong. Error: " + res.error_msg);
+
+          } else {
+
+            // a call was requested from the UI
+            // alert all actions to follow call starting
+            if (CatapultApp.callWaiting) {
+
+              // we will need one piece
+              // of information. that is the
+              // calll number this should be
+              // in E164 format
+              Oneline.generic({
+                "type": "call",
+                "data": {
+                  "to": CatapultApp.getCallNumber()
+                }
+              });
+
+              Catapult.callWaiting = false;
+
+            } else {
+              // regular follow we need to
+              // list all the 
+              // calls
+              //
+              // information provided:
+              // list [
+              // from:number
+              // to:number
+              // state:state
+              // ]
+              //
+
+              Oneline.generic({
+                "type": "list"
+              });
+
+              CatapultApp.propagateCalls(res.data);
+            }
+          }
+        }).run();
+        
+
+      });
+    </script>
+  </body>
+        </html>

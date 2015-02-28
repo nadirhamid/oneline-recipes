@@ -1,0 +1,2 @@
+cp -rf ./catapult_caller.conf /usr/local/oneline/conf/
+cp -rf ./catapult_caller.py /usr/local/oneline/modules/

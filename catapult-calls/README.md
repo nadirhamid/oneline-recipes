@@ -1,8 +1,8 @@
 Catapult Calls with WebSockets and Oneline
 =======================================================================
 
-This recipe describes how to perform calls using Bandwidth's Catapult
-SDK. It will stream results in realtime and give users up to date
+this recipe streams using Calls using Bandwidth's Catapult
+SDK. It will show results in realtime and give users up to date
 information on every call on his/her account
 
 

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<!-- 
+
+  WikiPedia PageRank in Realtime using WebSockets!
+
+  What this does:
+  This oneline recipe will demonstrates the searching
+  and updating of wiki articles in realtime all while ranking
+  them using pagerank and the predefined dampening factor
+
+-->
+<html class="no-js" lang="en-US"> <!--<![endif]-->
+    <head>
+        <title>Oneline WikiPageRank</title>
+    </head>
+    <body>
+      <h2>WikiPageRank using Oneline</h2>
+      <div id="fill">
+      </div>
+      <style>
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0;
+      }
+
+      ul button {
+        margin: 10px 0;
+      }
+  
+      ul li {
+        width:  25%;
+        padding: 20px;
+        margin-right: 10px;
+        border: 1px solid #E3E3E3;
+      }
+      ul li .title {
+        font-size: 12px;
+      }
+      ul li .pagerank {
+        font-size: 11px;
+      }
+      </style>
+      <p>
+      Below you can search a computer science article 
+      this will display it's pagerank. You can also update
+      it's pagerank by clicking its link.
+     
+      <br /><br />
+      <b>Hint:</b>
+      Search HITS algorithm
+      </p>
+
+      <input type="input" name="search_field" id="wikipagerank_term" />
+      <input type="submit" name="search" id="wikipagerank_search" />
+      <div id="wikipagerank_container">
+      </div>
+      <script type='application/javascript' src='./oneline.min.js'></script>
+      <script type='application/javascript' src='http://code.jquery.com/jquery-1.10.2.js'></script>
+      <script type='application/javascript'>
+
+      // main code for wikiPageRank
+      // application. Use jQuery to ease
+      // some things.
+      //
+      // functions provided:
+      // getPageRank/1
+      // updatePageRank/1
+      // search/1
+      WikiPageRankApp = window.WikiPageRankApp || {};
+      WikiPageRankApp.document = document;
+      WikiPageRankApp.container = document.getElementById("wikipagerank_container");
+      WikiPageRankApp.searchBox = document.getElementById("wikipagerank_term");
+      WikiPageRankApp.requestSearch = false;
+
+
+      // gets the page rank for
+      // the inputted article
+      // @param id: an id for the rank
+      WikiPageRankApp.getPageRank = function() {
+
+      };
+
+      // updates the page rank for
+      // article
+      // @param id: an id for the rank
+      WikiPageRankApp.updatePageRank = function(id) {
+
+      };
+
+
+      // return the article
+      // we need to update
+      //
+      WikiPageRankApp.getUpdateArticle = function() {
+        return WikiPageRankApp.updateArticle;
+      };
+
+      // get whether this
+      // is an increment
+      // or decrement
+      WikiPageRankApp.getUpdateType = function() {
+        return WikiPageRankApp.updateIncrement;
+      };
+
+      // gets the query
+      // we need to lookup
+      WikiPageRankApp.getQuery = function() {
+        return WikiPageRankApp.searchBox.value;
+      };
+      // display the wanring
+      // to the user
+      //
+      // @param msg
+      // a string to display
+      WikiPageRankApp.warn = function(msg) {
+        alert(msg);
+      };
+
+      // search the wikis for something
+      // @param query: a term [string]
+      WikiPageRankApp.search = function(data) {
+
+        WikiPageRankApp.container.innerHTML = "";//fast!
+        var ul = document.createElement("ul");
+
+        for (var i in data) {
+
+          var li = document.createElement("li");
+          var pgrank = document.createElement("div");
+          var title = document.createElement("div");
+          var update = document.createElement("button");
+          var update1 = document.createElement("button");
+
+          title.innerHTML = data[i].title;
+          pgrank.innerHTML = "PageRank: " + data[i].pagerank;
+          update.innerHTML = "Increment PageRank";
+          update1.innerHTML = "Decrement PageRank";
+
+          update.setAttribute("data-article-name", data[i].title);
+          update.onclick = function() {
+            WikiPageRankApp.updateArticle = this.getAttribute("data-article-name");
+            WikiPageRankApp.updateIncrement = true;
+            WikiPageRankApp.requestUpdate = true;
+          };
+          update1.onclick = function() {
+            WikiPageRankApp.updateArticle = this.getAttribute("data-article-name");
+            WikiPageRankApp.updateIncrement = false;
+            WikiPageRankApp.requestUpdate = true; 
+          }; 
+          li.appendChild(title);
+          li.appendChild(pgrank);
+          li.appendChild(update);
+          li.appendChild(update1);
+
+          ul.appendChild(li);
+        }
+
+        console.log(WikiPageRankApp);
+        WikiPageRankApp.container.appendChild(ul);
+
+      };
+
+      Oneline.setup({ 
+            module: 'wiki_pagerank', 
+            host: document.location.host, 
+            freq: 1000
+      });
+      Oneline.generic({
+           "type": 10, 
+           "data": []
+      });
+
+      // Initiate the pipeline
+      // in doing this we will
+      // check two things:
+      //
+      // for updates and for searches
+      // - searches should be done by default
+      // even when not asked, we are trying to be
+      // realtime
+      //
+      // - updates should be only done on
+      // request, these will be links on the results
+      // of search
+      // 
+      Oneline.pipeline(function(res) {
+        console.log("sending application data");
+        console.log(Oneline.generic);
+
+        if (res.status == 'success') {
+          if (WikiPageRankApp.requestSearch || !WikiPageRankApp.requestUpdate) {
+             Oneline.generic({
+                "type": "search",
+                "data": {
+                    "query": WikiPageRankApp.getQuery() 
+                 }
+             }); 
+             WikiPageRankApp.requestSearch = false;
+          } 
+
+          if (WikiPageRankApp.requestUpdate) {
+            Oneline.generic({
+              "type": "update",
+              "data": {
+                "article": WikiPageRankApp.getUpdateArticle(),
+                "increment": WikiPageRankApp.getUpdateType()
+              }
+            });
+  
+            WikiPageRankApp.requestUpdate = false;
+
+            WikiPageRankApp.warn("This article's pagerank has gone up!");
+          }
+
+          WikiPageRankApp.search(res.data);
+        } else {
+          // we couldn't
+          // connect to oneline
+          // display a warning
+          WikiPageRankApp.warn("Could not connect to Oneline");
+
+        }
+
+      }).run();
+    </script>
+  </body>
+        </html>
+                

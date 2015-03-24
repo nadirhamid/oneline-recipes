@@ -1,0 +1,3 @@
+## shortcut to run
+##
+python ./core-all.py "$@"

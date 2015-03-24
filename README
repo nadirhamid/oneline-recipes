@@ -1,8 +1,9 @@
 Oneline Recipes
 ===================================================================
 
-Below are a set of recipes for using Oneline. They outline
-some prominent areas one can use in making oneline modules. 
+Below are a set of recipes for using Oneline. They are real world
+use case scenarios.
+
 
 To set these up you will need:
 - lastest version of Oneline
@@ -16,4 +17,11 @@ Recipes so far:
     streams content based the tags using last.fm's open dataset
   
   - bandwidth catapult caller 
-    provides realtime updates for all calls made from your catapult account
+    provides realtime updates for all calls made from your catapult account.
+
+  -  wikipedia pagerank
+    provides websocket based pagerank, which can be incremented or
+    decremented on the fly. the implementor will be able to 
+    see the process or using oneline with Apache Hadoop and 
+    Apache PIG (tm)
+

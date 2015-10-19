@@ -8,7 +8,7 @@ This application will stream tag based data using Last.fm's publicly
 available dataset. You can add as many tags as you want filter
 and results will update accordingly 
 
-Oneline Recipe
+Deploying
 -------------------------------------------------------------------
 To set this up with oneline you will to do the following:
 

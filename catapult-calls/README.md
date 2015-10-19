@@ -25,3 +25,9 @@ Deploying
 
 to deploy this. you will need to update catapult_caller.conf
 with your bandwidth credentials. Afterwards run the Oneline server
+
+Running with oneline:
+  1. oneline --pack 'catapult_caller'
+  2. oneline --controller 'catapult_caller' 'init'
+  3. goto your browser http://{server_machine}/{where_this_is_deployed}
+

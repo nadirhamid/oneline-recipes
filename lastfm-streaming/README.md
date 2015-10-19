@@ -16,8 +16,11 @@ Application Specific:
   1. Make sure these files are accessible via your web server!
   2. make sure to fill in last_fm.conf first you will need to provide it
     your database credentials above anything
-  3. run ./bootstrap.py
-  4. watch it run
+  3. oneline --pack 'last_fm'
+  4. oneline --controller 'init'
+  5. oneline --controller 'load'
+
+  5. oneline --start
 
 
 Notes

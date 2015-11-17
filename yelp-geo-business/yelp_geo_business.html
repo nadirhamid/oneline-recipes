@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<!-- Yelp Business Streamer --> 
+<!-- -->
+<html class="no-js" lang="en-US"> <!--<![endif]-->
+    <head>
+        <title>Oneline -- Yelp Geolocation Streamer</title>
+    </head>
+    <body>
+      <h4>Yelp Geolocation Business</h5>
+      <p>
+        Below you can input a city, we will
+        find the nearest business to it, OR
+        you can select "near me" which will 
+        figure out your location, and find things
+        near you!
+      </p>
+
+      <style>
+       #results {
+          list-style: none;
+          width: 100%;
+       }
+       #results li {
+          float: left;
+          padding: 20px;
+          margin: 20px;
+          width: 33%;
+          height: 200px;
+          border: 1px solid #E3E3E3;
+  
+         padding: 20px;
+       }
+       #results li .text {
+          font-size: 11px;
+       }
+      </style>
+      <small>
+        Enter a business/venue name  here
+      </small>
+      <input id="yelp_query" />
+      <input type="submit" value="Search" />
+      <label>Limit Results To </label>
+      <input type='number' id='yelp_limit' value="12" max="1000" min="12"/>
+      <label>Geo Range</label>
+      <input type='number' step='0.0001' value='50.000' id='yelp_range' />
+      <hr />
+
+      <div id="yelp_main_cont">
+        
+      </div>
+      <br />
+      <small>
+      <!--<script type='text/javascript' src='./bson.js'></script>-->
+      <!--<script type='text/javascript' src='./transport.js'></script>-->
+      <!--<script type='text/javascript' src='./oneline.js'></script>-->
+    
+      <script type='text/javascript' src='./oneline.min.js'></script>
+      <script type='application/javascript' src='https://code.jquery.com/jquery-2.1.3.js'></script>
+      <!--<script type='application/javascript' src='./oneline.min.js'></script> -->
+      <script type='application/javascript'>
+
+      // Define the main logic around our
+      // Yelp Geolocation Streamer, 
+      // we will be using jQuery to make
+      // things easier. The application should
+      // provide:
+      //
+      // propagate/1
+      // search/1
+      //
+      var YelpGeoApp = window.YelpGeoApp || {};
+      YelpGeoApp.mainContainer = $("#yelp_main_cont").get()[0];
+      YelpGeoApp.query = $("#yelp_query");
+      YelpGeoApp.limit = $("#yelp_limit");
+      YelpGeoApp.range = $("#yelp_range");
+
+
+      YelpGeoApp.getQuery = function() {
+         return $(YelpGeoApp.query).val() === "" ? " " : $(YelpGeoApp.query).val();
+      };
+
+      YelpGeoApp.getLimit = function() {
+        return $(YelpGeoApp.limit).val();
+      };
+
+      YelpGeoApp.getRange = function() {
+        return $(YelpGeoApp.range).val();
+      };
+
+      // Propagate the provided data,
+      // this will need the following
+      // properties, 
+      //
+      // Name of Business/Venue
+      // Location
+      // Likes
+      //
+      YelpGeoApp.propagate = function(data) {
+        // use our container in
+        // forming this data
+        YelpGeoApp.mainContainer.innerHTML = "";
+        var ul = document.createElement("ul");
+        ul.setAttribute("id", "results");
+        if (data.length > 0) {
+
+          for(var i in data) {
+            var li = document.createElement("li");
+            var info = document.createElement("div");
+            var businessString = "<b>Business/Venue Name:</b><br /> "  +data[i]['business_name'] + "<br /><b>Address</b>" + data[i]['addr'];
+            info.innerHTML = businessString;
+          
+            li.appendChild(info);
+            ul.appendChild(li);
+          }
+          YelpGeoApp.mainContainer.appendChild(ul);
+        } else {
+          var hdg = document.createElement("h2"); 
+          hdg.innerHTML = "Sorry we couldn\'t find any results with that term..";
+          YelpGeoApp.mainContainer.appendChild(hdg);
+        }
+      };
+      Oneline.setup({ 
+              module: 'yelp_geo_business', 
+              host: document.location.host, 
+              port: 9000,
+              // order specifies in which 
+              // order we should
+              // look at our objects
+              // this will be appended 
+              // to our packet
+              // 
+              //
+              //
+              order: ["event", "geo"],
+              freq: 500
+        });
+
+
+      Oneline.ready(function() {
+        // Setup the geolocation object
+        // which will take the implementor's
+        // inputted range and compute a lng/lat
+        // according to it. More on Oneline.geolocation 
+        // here:
+        //
+        // https://github.com/nadirhamid/oneline/blob/master/examples/geo.html
+        // and 
+        // https://github.com/nadirhamid/oneline/blob/master/modules/GeoMod.py
+        // (please note style guide has changed as of 0.6.0)
+        // 
+        //
+
+        // one we have found 
+        // geo based data we can
+        // further filter it using
+        // Oneline.event's these
+        // can take a query and 
+        // will return the results
+        // 
+        // that match it in this example
+        // we are using 'like' which is
+        // analagous to a SQL 'like'
+        //
+        // for this example we will
+        // limit the results to 12
+        //
+        Oneline.event({
+           "business_name": Oneline.value("like", YelpGeoApp.getQuery()),
+           "limit": YelpGeoApp.getLimit() 
+        });
+        // A oneline geolocation can match
+        // the range in lat, lng radius
+        // this will be preserved through
+        // our searches, we need to keep 
+        // the results user centric
+        //
+        Oneline.geolocation({
+          "lat_field": "lat",
+          "lng_field": "lng",
+          "range": YelpGeoApp.getRange(),
+          "limit": YelpGeoApp.getLimit(),
+          "bidirectional": true
+        });
+
+        Oneline.pipeline(function(res) {
+          console.log(res);
+          // now that we have the 
+          // data we can see whether
+          // we are getting a good
+          // response this is done
+          // by looking at the
+          // res.status object which carries
+          // one of three states
+          //
+          //
+          // ok, error, empty
+          //
+          if (res.status === "ok" || res.status === "empty") {
+
+              // A successful response means
+              // we can use yelpGeoApp/propagate/1
+             
+
+              // Whenever a request returns as  
+              // success or empty we can find
+              // its data in the data parameter
+              YelpGeoApp.propagate(res.data); 
+              Oneline.event({ 
+                 'business_name': Oneline.value('like', YelpGeoApp.getQuery()),
+                 'limit': YelpGeoApp.getLimit()
+              });
+              Oneline.geolocation({ 
+                  'range': YelpGeoApp.getRange(),
+                  'limit': YelpGeoApp.getLimit()
+              });
+              // update our search term
+              // incase it has changed
+              //
+              //
+          } else {
+              // it's an error this means
+              // we will need to warn
+              // the user
+          }
+
+
+        }).run();
+      });
+    </script>
+  </body>
+        </html>
+                

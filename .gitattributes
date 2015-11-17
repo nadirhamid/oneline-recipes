@@ -1,0 +1,6 @@
+*.tsv filter=lfs diff=lfs merge=lfs -text
+README filter=lfs diff=lfs merge=lfs -text
+catapult-calls filter=lfs diff=lfs merge=lfs -text
+lastfm-streaming filter=lfs diff=lfs merge=lfs -text
+wiki-pagerank filter=lfs diff=lfs merge=lfs -text
+yelp-geo-business filter=lfs diff=lfs merge=lfs -text

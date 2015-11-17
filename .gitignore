@@ -1,0 +1,5 @@
+!/README.md
+/lastfm-streaming/*.pyc
+/catapult-caller/*.pyc
+/yelp-geo-business/*.pyc
+*.tsv

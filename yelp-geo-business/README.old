@@ -1,0 +1,22 @@
+Yelp Geolocation Based Business Streamer
+=====================================================================
+
+This example streams businesses/venues nearest to you based
+on your inputted keywords you can also adjust the options like
+geo range and limit of results
+
+
+Running:
+  1. in order to run this you will need to 
+  make sure 
+   python ./bootstrap.py 
+  which will fill the database
+  2.  use 
+  oneline --pack
+  3. visit the application in your browser
+  if all goes well you should see its output!
+
+
+Notes:
+  this example uses Yelp's public dataset and given this is 
+  from an older date.

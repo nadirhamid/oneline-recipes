@@ -8,10 +8,11 @@ db= None
 
 
 def last_fm_init(sql='last_fm.sql', startserver=False):
-  return ol.controller_init(sql=sql, startserver=False)
+  return ol.controller_init(sql=sql, startserver=startserver)
 
 def last_fm_load():
   global db
+  last_fm_init(sql='last_fm.sql',startserver=False)
   db  = ol.db_by_module("last_fm")
   count = db(db.tracks).count() 
   if count > 0:
@@ -38,7 +39,8 @@ def last_fm_load():
         _dirs(p) 
       if os.path.isfile(p):
         _files(p)    
-  return True
+
+  return last_fm_init(sql='last_fm.sql',startserver=True)
 def _files(file):
   global db
   if len(re.findall(".json$", file)) > 0:
